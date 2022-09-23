@@ -1,0 +1,33 @@
+server:
+  port: 8080
+spring:
+  main:
+    allow-bean-definition-overriding: true
+  application:
+    name: camunda-spring-boot
+  jackson:
+    date-format: yyyy-MM-dd HH:mm:ss
+    time-zone: GMT+8
+  mvc:
+    path-match:
+      matching-strategy: ant_path_matcher
+  jpa:
+    database-platform: org.hibernate.dialect.Kingbase8Dialect
+    hibernate:
+      ddl-auto: update
+  datasource:
+    url: jdbc:kingbase8://xxxx?currentSchema=camunda_dev_demo
+    username: xxxx
+    password: xxxx
+    driver-class-name: com.kingbase8.Driver
+
+#工作流配置
+camunda.bpm:
+  admin-user:
+    id: 1
+    password: 1
+    firstName: 管理员
+#  filter:
+#    create: All tasks
+  database:
+    type: postgres

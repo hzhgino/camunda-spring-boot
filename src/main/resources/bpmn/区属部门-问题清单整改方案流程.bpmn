@@ -1,0 +1,265 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:di="http://www.omg.org/spec/DD/20100524/DI" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:camunda="http://camunda.org/schema/1.0/bpmn" xmlns:modeler="http://camunda.org/schema/modeler/1.0" id="Definitions_0nzz9r3" targetNamespace="http://bpmn.io/schema/bpmn" exporter="Camunda Modeler" exporterVersion="5.1.0" modeler:executionPlatform="Camunda Platform" modeler:executionPlatformVersion="7.17.0">
+  <bpmn:process id="district_department_main_process" name="区属部门-主流程" isExecutable="true">
+    <bpmn:startEvent id="StartEvent_1">
+      <bpmn:extensionElements />
+      <bpmn:outgoing>Flow_116xu82</bpmn:outgoing>
+    </bpmn:startEvent>
+    <bpmn:sequenceFlow id="Flow_116xu82" sourceRef="StartEvent_1" targetRef="task_1_issue_question_list" />
+    <bpmn:sequenceFlow id="Flow_1" sourceRef="task_1_issue_question_list" targetRef="task_2_enter_rectification_plan" />
+    <bpmn:sequenceFlow id="Flow_2" sourceRef="task_2_enter_rectification_plan" targetRef="task_3_confirm_rectification_plan" />
+    <bpmn:exclusiveGateway id="gateway_scheme_confirmation" name="方案确认">
+      <bpmn:incoming>Flow_3</bpmn:incoming>
+      <bpmn:outgoing>Flow_4_approval_branch_agree</bpmn:outgoing>
+      <bpmn:outgoing>Flow_4_approval_branch_rejected</bpmn:outgoing>
+    </bpmn:exclusiveGateway>
+    <bpmn:sequenceFlow id="Flow_3" sourceRef="task_3_confirm_rectification_plan" targetRef="gateway_scheme_confirmation" />
+    <bpmn:sequenceFlow id="Flow_4_approval_branch_agree" name="通过" sourceRef="gateway_scheme_confirmation" targetRef="task_4_enter_progress_report">
+      <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression">${scheme_confirmation_approval=='agree'}</bpmn:conditionExpression>
+    </bpmn:sequenceFlow>
+    <bpmn:sequenceFlow id="Flow_4_approval_branch_rejected" name="驳回" sourceRef="gateway_scheme_confirmation" targetRef="task_2_enter_rectification_plan">
+      <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression">${scheme_confirmation_approval=='rejected'}</bpmn:conditionExpression>
+    </bpmn:sequenceFlow>
+    <bpmn:sequenceFlow id="Flow_5" sourceRef="task_4_enter_progress_report" targetRef="task_5_enter_audit_comments" />
+    <bpmn:sequenceFlow id="Flow_6" sourceRef="task_5_enter_audit_comments" targetRef="task_6_enter_notification_and_rectification_information" />
+    <bpmn:sequenceFlow id="Flow_7" sourceRef="task_6_enter_notification_and_rectification_information" targetRef="task_7_rectification_after_one_year" />
+    <bpmn:endEvent id="Event_1bsy03l">
+      <bpmn:extensionElements>
+        <camunda:executionListener delegateExpression="${endHandlerService}" event="end" />
+      </bpmn:extensionElements>
+      <bpmn:incoming>Flow_8</bpmn:incoming>
+    </bpmn:endEvent>
+    <bpmn:sequenceFlow id="Flow_8" sourceRef="task_7_rectification_after_one_year" targetRef="Event_1bsy03l" />
+    <bpmn:userTask id="task_2_enter_rectification_plan" name="录入&#10;整改方案" camunda:assignee="${task_2_assignee}">
+      <bpmn:extensionElements>
+        <camunda:properties>
+          <camunda:property name="next_assignee" value="task_3_assignee" />
+        </camunda:properties>
+      </bpmn:extensionElements>
+      <bpmn:incoming>Flow_1</bpmn:incoming>
+      <bpmn:incoming>Flow_4_approval_branch_rejected</bpmn:incoming>
+      <bpmn:outgoing>Flow_2</bpmn:outgoing>
+    </bpmn:userTask>
+    <bpmn:userTask id="task_3_confirm_rectification_plan" name="多方&#10;确认整改方案" camunda:assignee="${task_3_assignee}">
+      <bpmn:extensionElements>
+        <camunda:properties>
+          <camunda:property name="next_assignee" value="task_4_assignee" />
+          <camunda:property name="approval_variable" value="scheme_confirmation_approval" />
+        </camunda:properties>
+      </bpmn:extensionElements>
+      <bpmn:incoming>Flow_2</bpmn:incoming>
+      <bpmn:outgoing>Flow_3</bpmn:outgoing>
+    </bpmn:userTask>
+    <bpmn:userTask id="task_4_enter_progress_report" name="录入&#10;整改进展情况报告" camunda:assignee="${task_4_assignee}">
+      <bpmn:extensionElements>
+        <camunda:properties>
+          <camunda:property name="next_assignee" value="task_5_assignee" />
+        </camunda:properties>
+      </bpmn:extensionElements>
+      <bpmn:incoming>Flow_4_approval_branch_agree</bpmn:incoming>
+      <bpmn:outgoing>Flow_5</bpmn:outgoing>
+    </bpmn:userTask>
+    <bpmn:userTask id="task_5_enter_audit_comments" name="录入&#10;审核意见" camunda:assignee="${task_5_assignee}">
+      <bpmn:extensionElements>
+        <camunda:properties>
+          <camunda:property name="next_assignee" value="task_6_assignee" />
+        </camunda:properties>
+      </bpmn:extensionElements>
+      <bpmn:incoming>Flow_5</bpmn:incoming>
+      <bpmn:outgoing>Flow_6</bpmn:outgoing>
+    </bpmn:userTask>
+    <bpmn:userTask id="task_7_rectification_after_one_year" name="全面整改1年报结，录入整改情况" camunda:assignee="${task_7_assignee}">
+      <bpmn:extensionElements />
+      <bpmn:incoming>Flow_7</bpmn:incoming>
+      <bpmn:outgoing>Flow_8</bpmn:outgoing>
+    </bpmn:userTask>
+    <bpmn:userTask id="task_6_enter_notification_and_rectification_information" name="录入&#10;党内通报、公开整改时间及内容" camunda:assignee="${task_6_assignee}">
+      <bpmn:documentation>task_6_assignee</bpmn:documentation>
+      <bpmn:extensionElements>
+        <camunda:properties>
+          <camunda:property name="next_assignee" value="task_7_assignee" />
+        </camunda:properties>
+      </bpmn:extensionElements>
+      <bpmn:incoming>Flow_6</bpmn:incoming>
+      <bpmn:outgoing>Flow_7</bpmn:outgoing>
+    </bpmn:userTask>
+    <bpmn:serviceTask id="task_1_issue_question_list" name="下发&#10;问题清单" camunda:delegateExpression="${task_1_delegate}">
+      <bpmn:extensionElements>
+        <camunda:properties>
+          <camunda:property name="next_assignee" value="task_2_assignee" />
+        </camunda:properties>
+      </bpmn:extensionElements>
+      <bpmn:incoming>Flow_116xu82</bpmn:incoming>
+      <bpmn:outgoing>Flow_1</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:group id="Group_0kjjj8j" categoryValueRef="CategoryValue_1ph9sdx" />
+    <bpmn:group id="Group_1xq5fh5" categoryValueRef="CategoryValue_0ywus53" />
+    <bpmn:group id="Group_1srs0y3" categoryValueRef="CategoryValue_1kjs5c9" />
+    <bpmn:textAnnotation id="TextAnnotation_01l0h6t">
+      <bpmn:text>1、纪检监察室：巡察反馈会信息录入；
+        2、被巡察党组织（区直部门或镇党委）：民主生活会录入、党内通报录入；
+        3、被巡察组织：查看退回后的表单，回复意见；指导意见的历史要保存；</bpmn:text>
+    </bpmn:textAnnotation>
+    <bpmn:association id="Association_03cy7et" sourceRef="task_2_enter_rectification_plan" targetRef="TextAnnotation_01l0h6t" />
+    <bpmn:textAnnotation id="TextAnnotation_0pmpu3b">
+      <bpmn:text>1、三方（巡察办、纪检监察室、组织部）：可以同时填表单给意见；
+        2、纪检监察室提交前，需要提示其他单位是否给意见；</bpmn:text>
+    </bpmn:textAnnotation>
+    <bpmn:association id="Association_0s5v4tt" sourceRef="task_3_confirm_rectification_plan" targetRef="TextAnnotation_0pmpu3b" />
+    <bpmn:textAnnotation id="TextAnnotation_1mslm1u">
+      <bpmn:text>一、巡察整改督导台账
+        1）派驻机构：录入巡察整改督导台账信息
+        2）镇纪委：录入巡察整改督导台账信息
+        3）区属部门：反馈派驻机构发送的台账信息
+        4）镇党委：反馈镇纪委发送的台账信息
+        二、巡察整改日常监督台账
+        1）纪检监察室：录入巡察整改日常监督台账信息
+        2）区属部门：录入巡察整改日常监督台账反馈信息
+        3）镇党委：录入巡察整改日常监督台账反馈信息
+        三、巡察办：此流程未确认开始、结束节点</bpmn:text>
+    </bpmn:textAnnotation>
+    <bpmn:association id="Association_13alvle" sourceRef="task_6_enter_notification_and_rectification_information" targetRef="TextAnnotation_1mslm1u" />
+  </bpmn:process>
+  <bpmn:category id="Category_01rqd3y">
+    <bpmn:categoryValue id="CategoryValue_1ph9sdx" value="巡察办" />
+  </bpmn:category>
+  <bpmn:category id="Category_0j9sug8">
+    <bpmn:categoryValue id="CategoryValue_0ywus53" value="纪检监察室" />
+  </bpmn:category>
+  <bpmn:category id="Category_026je3e">
+    <bpmn:categoryValue id="CategoryValue_1kjs5c9" value="被巡察党组织（区直部门或镇党委）" />
+  </bpmn:category>
+  <bpmndi:BPMNDiagram id="BPMNDiagram_1">
+    <bpmndi:BPMNPlane id="BPMNPlane_1" bpmnElement="district_department_main_process">
+      <bpmndi:BPMNEdge id="Flow_01gjw44_di" bpmnElement="Flow_8">
+        <di:waypoint x="740" y="880" />
+        <di:waypoint x="740" y="992" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_07qy5q2_di" bpmnElement="Flow_7">
+        <di:waypoint x="740" y="740" />
+        <di:waypoint x="740" y="800" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_141pqpt_di" bpmnElement="Flow_6">
+        <di:waypoint x="580" y="700" />
+        <di:waypoint x="690" y="700" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_1x7y9de_di" bpmnElement="Flow_5">
+        <di:waypoint x="690" y="560" />
+        <di:waypoint x="530" y="560" />
+        <di:waypoint x="530" y="660" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_0k9lv6m_di" bpmnElement="Flow_4_approval_branch_rejected">
+        <di:waypoint x="765" y="440" />
+        <di:waypoint x="820" y="440" />
+        <di:waypoint x="820" y="190" />
+        <di:waypoint x="790" y="190" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="780" y="418" width="22" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_05u78cr_di" bpmnElement="Flow_4_approval_branch_agree">
+        <di:waypoint x="740" y="465" />
+        <di:waypoint x="740" y="520" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="744" y="490" width="22" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_0w3zc7h_di" bpmnElement="Flow_3">
+        <di:waypoint x="580" y="347" />
+        <di:waypoint x="740" y="347" />
+        <di:waypoint x="740" y="415" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_1c1zmiz_di" bpmnElement="Flow_2">
+        <di:waypoint x="730" y="230" />
+        <di:waypoint x="730" y="250" />
+        <di:waypoint x="530" y="250" />
+        <di:waypoint x="530" y="307" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_0v9ps9o_di" bpmnElement="Flow_1">
+        <di:waypoint x="370" y="190" />
+        <di:waypoint x="690" y="190" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_116xu82_di" bpmnElement="Flow_116xu82">
+        <di:waypoint x="215" y="190" />
+        <di:waypoint x="270" y="190" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNShape id="_BPMNShape_StartEvent_2" bpmnElement="StartEvent_1">
+        <dc:Bounds x="179" y="172" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Gateway_0l94gcc_di" bpmnElement="gateway_scheme_confirmation" isMarkerVisible="true">
+        <dc:Bounds x="715" y="415" width="50" height="50" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="668" y="433" width="44" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Event_1bsy03l_di" bpmnElement="Event_1bsy03l">
+        <dc:Bounds x="722" y="992" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_1haia8k_di" bpmnElement="task_2_enter_rectification_plan">
+        <dc:Bounds x="690" y="150" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_1g7832r_di" bpmnElement="task_3_confirm_rectification_plan">
+        <dc:Bounds x="480" y="307" width="100" height="80" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_0h3ujc8_di" bpmnElement="task_4_enter_progress_report">
+        <dc:Bounds x="690" y="520" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_1l15uqe_di" bpmnElement="task_5_enter_audit_comments">
+        <dc:Bounds x="480" y="660" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_1ayayks_di" bpmnElement="task_7_rectification_after_one_year">
+        <dc:Bounds x="690" y="800" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_05oiixt_di" bpmnElement="task_6_enter_notification_and_rectification_information">
+        <dc:Bounds x="690" y="660" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_0g8f38z_di" bpmnElement="task_1_issue_question_list">
+        <dc:Bounds x="270" y="150" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Group_0kjjj8j_di" bpmnElement="Group_0kjjj8j">
+        <dc:Bounds x="240" y="80" width="160" height="850" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="304" y="87" width="33" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="BPMNShape_03eq3je" bpmnElement="Group_1xq5fh5">
+        <dc:Bounds x="440" y="80" width="180" height="850" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="503" y="87" width="55" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="BPMNShape_1rij006" bpmnElement="Group_1srs0y3">
+        <dc:Bounds x="660" y="80" width="180" height="850" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="712" y="87" width="77" height="40" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="TextAnnotation_01l0h6t_di" bpmnElement="TextAnnotation_01l0h6t">
+        <dc:Bounds x="860" y="123" width="479.9991237294076" height="56.995925341745526" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="TextAnnotation_0pmpu3b_di" bpmnElement="TextAnnotation_0pmpu3b">
+        <dc:Bounds x="860" y="303" width="429.99677280550776" height="36.99171686746988" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="TextAnnotation_1mslm1u_di" bpmnElement="TextAnnotation_1mslm1u">
+        <dc:Bounds x="870" y="620" width="570" height="170" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNEdge id="Association_03cy7et_di" bpmnElement="Association_03cy7et">
+        <di:waypoint x="740" y="150" />
+        <di:waypoint x="740" y="138" />
+        <di:waypoint x="860" y="138" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Association_0s5v4tt_di" bpmnElement="Association_0s5v4tt">
+        <di:waypoint x="580" y="320" />
+        <di:waypoint x="860" y="321" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Association_13alvle_di" bpmnElement="Association_13alvle">
+        <di:waypoint x="790" y="701" />
+        <di:waypoint x="870" y="701" />
+      </bpmndi:BPMNEdge>
+    </bpmndi:BPMNPlane>
+  </bpmndi:BPMNDiagram>
+</bpmn:definitions>
